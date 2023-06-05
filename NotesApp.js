@@ -13,8 +13,15 @@ app.get('/',(req,res)=>{
 });
 
 app.get('/notes',(req,res)=>{
-    //Todo: to implement
-    res.send('all the notes');
+    fs.readFile(NOTES_FILE_PATH,'utf-8',(err,data)=>{
+        if(err && err.code != 'ENOENT'){
+            return res.status(500).json({error:"Fail to read the file"});
+        } else if(err && err.code == 'ENOENT'){
+            return res.status(200).send('');
+        }
+        let result = JSON.parse(data);
+        return res.status(200).send(result);
+    });
 });
 
 app.post('/note',(req,res) => {
@@ -27,13 +34,13 @@ app.post('/note',(req,res) => {
     fs.readFile(NOTES_FILE_PATH,'utf-8',(err,data)=> {
         if(err && err.code != 'ENOENT'){
             return res.status(500).json({error: 'Failed to read Notes file'})
-        } else if (err.code == 'ENOENT'){
+        } else if (err && err.code == 'ENOENT'){
             data = null;
         }
         
         let notes = [];
         if(data != null){
-            notes = SON.parse(data);
+            notes = JSON.parse(data);
         }
         const newNote = {
             _id: Date.now().toString(),
