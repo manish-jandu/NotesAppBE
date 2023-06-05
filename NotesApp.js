@@ -61,6 +61,46 @@ app.post('/note',(req,res) => {
 
 });
 
+app.delete('/notes/:id',(req,res) => {
+    const noteId = req.params.id;
+
+    if(!noteId){
+        return res.status(400).json({error:'Please enter a node id'});
+    }
+
+    fs.readFile(NOTES_FILE_PATH,'utf-8',(err,data)=>{
+        if(err && err.code != 'ENOENT'){
+            return res.status(500).json({error:"Fail to read the file"});
+        } else if(err && err.code == 'ENOENT'){
+            return res.status(200).send('No note exist');
+        }
+
+        let result = JSON.parse(data);
+        let newResult = [];
+        let contains = false;
+        result.forEach(element => {
+            if(element._id == noteId){
+                contains = true;
+            } else {
+                newResult.push(element);
+            }
+        });
+
+        if(!contains){
+            return res.status(400).json({error:'This Note doesn\'t exist'});
+        }
+
+        fs.writeFile(NOTES_FILE_PATH,JSON.stringify(newResult),(err)=>{
+            if(err){
+                return res.status(500).json({error:'Something went wrong'});
+            }
+
+            return res.status(200).send('Succesfully deleted');
+        });
+
+    });
+});
+
 app.listen(port, ()=>{
     console.log(`Running server on ${port}`);
 });
@@ -68,7 +108,7 @@ app.listen(port, ()=>{
 
 //Todo:
 // 1. Add a single Note. ✅
-// 2. Show all Notes List.
-// 3. Delete A Note.
+// 2. Show all Notes List. ✅
+// 3. Delete A Note.✅
 // 4. Search a note with title.
 // Note(title,desc,_id)
