@@ -12,6 +12,7 @@ app.get('/',(req,res)=>{
     res.send("this is a response from server")
 });
 
+//Get All Notes
 app.get('/notes',(req,res)=>{
     fs.readFile(NOTES_FILE_PATH,'utf-8',(err,data)=>{
         if(err && err.code != 'ENOENT'){
@@ -24,6 +25,7 @@ app.get('/notes',(req,res)=>{
     });
 });
 
+//Add new Note
 app.post('/note',(req,res) => {
     const {title, desc} = req.body;
 
@@ -61,6 +63,7 @@ app.post('/note',(req,res) => {
 
 });
 
+//Delte a Note with id
 app.delete('/notes/:id',(req,res) => {
     const noteId = req.params.id;
 
@@ -101,6 +104,32 @@ app.delete('/notes/:id',(req,res) => {
     });
 });
 
+//Search a note
+app.get('/note',(req,res)=>{
+    const title = req.query.title;
+    if(!title){
+        return res.status(400).json({error:'Please send a title in query'});
+    }
+    fs.readFile(NOTES_FILE_PATH,'utf-8',(err,data)=>{
+        if(err && err.code != 'ENOENT'){
+            return res.status(500).json({error:"Fail to read the file"});
+        } else if(err && err.code == 'ENOENT'){
+            return res.status(200).send('');
+        }
+
+        const parsedData = JSON.parse(data);
+        let result = [];
+        parsedData.forEach(element => {
+            if(element.title.includes(title)){
+                result.push(element); 
+            }
+        });
+
+        return res.status(200).json(result);
+    });
+
+});
+
 app.listen(port, ()=>{
     console.log(`Running server on ${port}`);
 });
@@ -110,5 +139,5 @@ app.listen(port, ()=>{
 // 1. Add a single Note. ✅
 // 2. Show all Notes List. ✅
 // 3. Delete A Note.✅
-// 4. Search a note with title.
+// 4. Search a note with title. ✅
 // Note(title,desc,_id)
